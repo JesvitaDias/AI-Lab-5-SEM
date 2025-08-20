@@ -1,0 +1,62 @@
+HUMAN = "X"
+AI = "O"
+EMPTY = " "
+board = [[EMPTY for _ in range(3)] for _ in range(3)]
+def print_board(board):
+    for row in board:
+        print("|".join(row))
+        print("-" * 5)
+def isWin(board, sym):
+    lines = [ [(0,0),(0,1),(0,2)], [(1,0),(1,1),(1,2)], [(2,0),(2,1),(2,2)], [(0,0),(1,0),(2,0)], [(0,1),(1,1),(2,1)], [(0,2),(1,2),(2,2)], [(0,0),(1,1),(2,2)], [(0,2),(1,1),(2,0)]]
+    for line in lines:
+        if all(board[r][c] == sym for (r,c) in line):
+            return True
+    return False
+def emptyCells(board):
+    return [(r,c) for r in range(3) for c in range(3) if board[r][c] == EMPTY]
+def findWinningMove(board, sym):
+    for (r,c) in emptyCells(board):
+        board[r][c] = sym
+        if isWin(board, sym):
+            board[r][c] = EMPTY
+            return (r,c)
+        board[r][c] = EMPTY
+    return None
+def chooseMove(board):
+    move = findWinningMove(board, AI)
+    if move: return move
+    move = findWinningMove(board, HUMAN)
+    if move: return move
+    if board[1][1] == EMPTY:
+        return (1,1)
+    for (r,c) in [(0,0),(0,2),(2,0),(2,2)]:
+        if board[r][c] == EMPTY:
+            return (r,c)
+    for (r,c) in [(0,1),(1,0),(1,2),(2,1)]:
+        if board[r][c] == EMPTY:
+            return (r,c)
+    return None
+currentPlayer = HUMAN
+while True:
+    print_board(board)
+    if isWin(board, AI):
+        print("AI (O) wins!")
+        break
+    if isWin(board, HUMAN):
+        print("You (X) win!")
+        break
+    if not emptyCells(board):
+        print("It's a draw!")
+        break
+    if currentPlayer == HUMAN:
+        move=input("Enter your move as row,col (0-2,0-2): ")
+        r,c=map(int, move.split(","))
+        if board[r][c]==EMPTY:
+            board[r][c]=HUMAN
+            currentPlayer=AI
+        else:
+            print("Cell already taken! Try again.")
+    else:
+        r,c=chooseMove(board)
+        board[r][c]=AI
+        currentPlayer=HUMAN
