@@ -1,0 +1,54 @@
+from copy import deepcopy
+def find_blank(state):
+ for i in range(3):
+  for j in range(3):
+   if state[i][j]==0:
+    return i,j
+def swap(state,i1,j1,i2,j2):
+ copy=deepcopy(state)
+ copy[i1][j1],copy[i2][j2]=copy[i2][j2],copy[i1][j1]
+ return copy
+def print_state(state):
+ for row in state:
+  print(row)
+def state_to_string(state):
+ return ''.join(str(num) for row in state for num in row)
+def succ(state):
+ i,j=find_blank(state)
+ successors=[]
+ if i>0:
+  successors.append(swap(state,i,j,i-1,j))
+ if i<2:
+  successors.append(swap(state,i,j,i+1,j))
+ if j>0:
+  successors.append(swap(state,i,j,i,j-1))
+ if j<2:
+  successors.append(swap(state,i,j,i,j+1))
+ return successors
+def dfs(start,goal):
+ stack=[start]
+ visited=set()
+ while stack:
+  state=stack.pop()
+  print_state(state)
+  if state==goal:
+   print("Solution found")
+   return True
+  state_str=state_to_string(state)
+  if state_str not in visited:
+   visited.add(state_str)
+   for s in succ(state):
+    stack.append(s)
+ print("No solution")
+ return False
+start=[]
+for _ in range(3):
+ row=list(map(int,input().split()))
+ start.append(row)
+goal=[]
+for _ in range(3):
+ row=list(map(int,input().split()))
+ goal.append(row)
+dfs(start,goal)
+
+
