@@ -1,0 +1,38 @@
+import itertools
+def modelsatisfies(model,sentence):
+    if isinstance(sentence,str):
+        return model[sentence]
+    elif sentence[0]=='¬':
+        return not modelsatisfies(model,sentence[1])
+    elif sentence[0]=='∧':
+        return modelsatisfies(model,sentence[1]) and modelsatisfies(model,sentence[2])
+    elif sentence[0]=='∨':
+        return modelsatisfies(model,sentence[1]) or modelsatisfies(model,sentence[2])
+    elif sentence[0]=='→':
+        return (not modelsatisfies(model,sentence[1])) or modelsatisfies(model, sentence[2])
+
+def getsymbols(sentence,symbols):
+    if isinstance(sentence,str):
+        symbols.add(sentence)
+    elif isinstance(sentence, tuple):
+        for part in sentence[1:]:
+            getsymbols(part,symbols)
+def printtruthtable(KB):
+    symbols=set()
+    for s in KB:
+        getsymbols(s,symbols)
+    symbols=sorted(list(symbols))
+    header=" | ".join(symbols) + " || " + " | ".join([str(s) for s in KB])
+    print(header)
+    print("-" * len(header))
+    for values in itertools.product([False, True],repeat=len(symbols)):
+        model=dict(zip(symbols, values))
+        row=" | ".join(['T' if model[s] else 'F' for s in symbols])
+        row+=" || " + " | ".join(['T' if modelsatisfies(model, s) else 'F' for s in KB])
+        print(row)
+KB = [
+    ('→', 'Q', 'P'),
+    ('→', 'P', ('¬', 'Q')),
+    ('∨', 'Q', 'R')
+]
+printtruthtable(KB)
