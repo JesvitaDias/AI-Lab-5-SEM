@@ -1,0 +1,100 @@
+from copy import deepcopy
+import heapq
+
+def find_blank(state):
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] == 0:
+                return i, j
+
+def swap(state, i1, j1, i2, j2):
+    copy = deepcopy(state)
+    copy[i1][j1], copy[i2][j2] = copy[i2][j2], copy[i1][j1]
+    return copy
+
+def print_state(state):
+    for row in state:
+        print(row)
+
+def state_to_string(state):
+    return ''.join(str(num) for row in state for num in row)
+
+def succ(state):
+    i, j = find_blank(state)
+    s = []
+    if i > 0:
+        s.append(swap(state, i, j, i - 1, j))
+    if i < 2:
+        s.append(swap(state, i, j, i + 1, j))
+    if j > 0:
+        s.append(swap(state, i, j, i, j - 1))
+    if j < 2:
+        s.append(swap(state, i, j, i, j + 1))
+    return s
+
+def misplaced_tiles(state, goal):
+    return sum(1 for i in range(3) for j in range(3) if state[i][j] != 0 and state[i][j] != goal[i][j])
+
+def manhattan(state, goal):
+    pos = {}
+    for i in range(3):
+        for j in range(3):
+            pos[goal[i][j]] = (i, j)
+    d = 0
+    for i in range(3):
+        for j in range(3):
+            num = state[i][j]
+            if num != 0:
+                gi, gj = pos[num]
+                d += abs(i - gi) + abs(j - gj)
+    return d
+
+def astar(start, goal, heuristic_type):
+    open_heap = []
+    visited = set()
+    g = {state_to_string(start): 0}
+
+    if heuristic_type == "misplaced":
+        h = misplaced_tiles(start, goal)
+    else:
+        h = manhattan(start, goal)
+
+    heapq.heappush(open_heap, (h, start))
+
+    while open_heap:
+        f, state = heapq.heappop(open_heap)
+        print_state(state)
+
+        if state == goal:
+            print("Solution found")
+            return True
+
+        state_str = state_to_string(state)
+        if state_str in visited:
+            continue
+        visited.add(state_str)
+
+        for s in succ(state):
+            s_str = state_to_string(s)
+            tentative_g = g[state_str] + 1
+            if s_str not in g or tentative_g < g[s_str]:
+                g[s_str] = tentative_g
+                if heuristic_type == "misplaced":
+                    h = misplaced_tiles(s, goal)
+                else:
+                    h = manhattan(s, goal)
+                heapq.heappush(open_heap, (tentative_g + h, s))
+
+    print("No solution")
+    return False
+
+start = []
+for _ in range(3):
+    start.append(list(map(int, input().split())))
+
+goal = []
+for _ in range(3):
+    goal.append(list(map(int, input().split())))
+
+choice = input("Enter heuristic (misplaced/manhattan): ").strip().lower()
+astar(start, goal, choice)
