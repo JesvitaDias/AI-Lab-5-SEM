@@ -60,3 +60,4 @@ while True:
         r,c=chooseMove(board)
         board[r][c]=AI
         currentPlayer=HUMAN
+
